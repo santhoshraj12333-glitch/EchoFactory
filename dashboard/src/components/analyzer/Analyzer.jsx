@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
-import { FiAlertCircle, FiCheckCircle } from 'react-icons/fi'
+import { FiAlertCircle } from 'react-icons/fi'
 import AudioDropzone from './AudioDropzone.jsx'
 import ProcessingSteps from './ProcessingOverlay.jsx'
+import ResultsPanel from '../results/ResultsPanel.jsx'
 import Button from '../ui/Button.jsx'
 import { predictAudio } from '../../services/api.js'
+import { usePredictionHistory } from '../../hooks/usePredictionHistory.js'
+import PredictionHistory from '../history/PredictionHistory.jsx'
 
 const PROCESS_STEPS = [
   'Uploading audio…',
@@ -19,6 +22,7 @@ export default function Analyzer({ machine }) {
   const [step, setStep] = useState(0)
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
+  const { entries, addEntry, clear } = usePredictionHistory()
 
   const clearFile = useCallback(() => {
     setSourceFile(null)
@@ -52,6 +56,13 @@ export default function Analyzer({ machine }) {
     try {
       const data = await predictAudio(sourceFile)
       setResult(data)
+      addEntry({
+        machine,
+        prediction: data.prediction,
+        confidence: data.confidence,
+        anomaly_score: data.anomaly_score,
+        fileName: sourceFile.name,
+      })
     } catch (err) {
       setError(
         err?.response?.data?.detail || err?.message || 'Prediction failed. Is the backend online?',
@@ -115,68 +126,13 @@ export default function Analyzer({ machine }) {
         </div>
       )}
 
-      {result && !analyzing && <ResultDisplay result={result} />}
+      {result && !analyzing && <ResultsPanel result={result} file={sourceFile} />}
+
+      {entries.length > 0 && (
+        <div className="mt-12">
+          <PredictionHistory entries={entries} onClear={clear} />
+        </div>
+      )}
     </section>
-  )
-}
-
-function ResultDisplay({ result }) {
-  const { prediction, machine, confidence, anomaly_score } = result
-  const abnormal = prediction.toLowerCase() === 'abnormal'
-  const conf = Number(confidence) || 0
-  const score = Number(anomaly_score) || 0
-
-  return (
-    <div className="mx-auto mt-8 px-2">
-      <div className="mb-6 flex items-center justify-center">
-        <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-brand-muted">
-          <FiCheckCircle className="h-4 w-4 text-brand-success" /> Analysis complete
-        </p>
-      </div>
-
-      <div className="mx-auto max-w-3xl overflow-hidden rounded-card border border-brand-border bg-brand-card">
-        <div
-          className={`flex items-center justify-between border-b border-brand-border px-6 py-4 ${
-            abnormal ? 'bg-brand-danger/10' : 'bg-brand-success/10'
-          }`}
-        >
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-brand-muted">Prediction</p>
-            <p className={`mt-0.5 text-3xl font-bold ${abnormal ? 'text-brand-danger' : 'text-brand-success'}`}>
-              {abnormal ? 'ABNORMAL' : 'NORMAL'}
-            </p>
-          </div>
-          <span
-            className={`inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold ${
-              abnormal ? 'bg-brand-danger/15 text-brand-danger' : 'bg-brand-success/15 text-brand-success'
-            }`}
-          >
-            <span className={`h-2 w-2 rounded-full ${abnormal ? 'bg-brand-danger' : 'bg-brand-success'}`} />
-            {abnormal ? 'Anomaly detected' : 'Operating normally'}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 gap-6 px-6 py-8 sm:grid-cols-3">
-          <div className="flex flex-col items-center justify-center gap-1">
-            <p className="text-xs font-medium uppercase tracking-wider text-brand-muted">Confidence</p>
-            <p className="text-4xl font-bold text-brand-forest">{conf.toFixed(1)}%</p>
-          </div>
-          <div className="flex flex-col items-center justify-center gap-1">
-            <p className="text-xs font-medium uppercase tracking-wider text-brand-muted">Anomaly Score</p>
-            <p className="text-4xl font-bold text-brand-text">{score.toFixed(2)}</p>
-            <div className="mt-2 h-1.5 w-40 overflow-hidden rounded-full bg-brand-border">
-              <div
-                className={`h-full rounded-full ${score >= 0.5 ? 'bg-brand-danger' : 'bg-brand-success'}`}
-                style={{ width: `${Math.min(100, score * 100)}%` }}
-              />
-            </div>
-          </div>
-          <div className="flex flex-col items-center justify-center gap-1">
-            <p className="text-xs font-medium uppercase tracking-wider text-brand-muted">Machine</p>
-            <p className="text-2xl font-bold text-brand-text">{machine}</p>
-          </div>
-        </div>
-      </div>
-    </div>
   )
 }
