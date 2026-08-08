@@ -3,10 +3,11 @@ import { FiUpload, FiTrash2 } from 'react-icons/fi'
 import { getAudioDuration, formatBytes, formatDuration, ACCEPTED_TYPES } from '../../utils/audio.js'
 
 /**
- * Drag & drop upload area. Exposes the selected File to the parent via onSelect.
- * Automatically measures duration and reports it via onFileReady.
+ * Drag & drop upload area. Exposes the selected File to the parent via onSelect
+ * and reports measured duration + basic validity via onFileInfo so the parent
+ * can gate the Analyze button.
  */
-export default function AudioDropzone({ file, onSelect, disabled }) {
+export default function AudioDropzone({ file, onSelect, onFileInfo, disabled }) {
   const inputRef = useRef(null)
   const [dragging, setDragging] = useState(false)
   const [duration, setDuration] = useState(null)
@@ -14,13 +15,19 @@ export default function AudioDropzone({ file, onSelect, disabled }) {
   useEffect(() => {
     if (!file) {
       setDuration(null)
+      onFileInfo?.({ duration: null, valid: false })
       return
     }
     let active = true
-    getAudioDuration(file).then((d) => active && setDuration(d))
+    getAudioDuration(file).then((d) => {
+      if (!active) return
+      setDuration(d)
+      onFileInfo?.({ duration: d, valid: validateFile(file, d) })
+    })
     return () => {
       active = false
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [file])
 
   const handleFiles = (files) => {
@@ -71,7 +78,7 @@ export default function AudioDropzone({ file, onSelect, disabled }) {
           </p>
           <p className="mt-1 text-sm text-brand-muted">or click to browse</p>
           <p className="mt-4 text-xs text-brand-muted">
-            WAV or MP3 · min 2 seconds
+            WAV or MP3 · min 2 seconds · max 10 MB
           </p>
         </>
       ) : (
@@ -94,11 +101,18 @@ export default function AudioDropzone({ file, onSelect, disabled }) {
               <FiTrash2 className="h-4 w-4" />
             </button>
           </div>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-primary/15 px-3 py-1 text-xs font-medium text-brand-forest">
-            <FiUpload /> Ready to analyze
-          </span>
         </div>
       )}
     </div>
   )
+}
+
+/** Mirrors backend constraints: audio type, max 10MB, min 2s. */
+function validateFile(file, duration) {
+  if (!file) return false
+  const name = file.name.toLowerCase()
+  const isAudio = file.type.startsWith('audio/') && (name.endsWith('.wav') || name.endsWith('.mp3'))
+  const isSized = file.size <= 10 * 1024 * 1024
+  const isLongEnough = duration == null || duration >= 2
+  return isAudio && isSized && isLongEnough
 }

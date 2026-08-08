@@ -53,13 +53,14 @@ async def predict(file: UploadFile = File(...)):
         raise HTTPException(status_code=503, detail="Model not loaded")
     
     filename = file.filename.lower()
-    if not file.content_type or not file.content_type.startswith("audio/"):
+    content_type = file.content_type or ""
+    if not content_type.startswith("audio/"):
         if filename.endswith(".wav") or filename.endswith(".mp3"):
-            file.content_type = "audio/wav" if filename.endswith(".wav") else "audio/mpeg"
+            content_type = "audio/wav" if filename.endswith(".wav") else "audio/mpeg"
         else:
             raise HTTPException(status_code=400, detail="File must be an audio file (WAV or MP3)")
-    
-    if not file.content_type.startswith("audio/"):
+
+    if not content_type.startswith("audio/"):
         raise HTTPException(status_code=400, detail="File must be an audio file (WAV or MP3)")
     
     try:
