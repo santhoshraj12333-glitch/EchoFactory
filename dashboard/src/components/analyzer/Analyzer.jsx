@@ -4,6 +4,7 @@ import AudioDropzone from './AudioDropzone.jsx'
 import ProcessingSteps from './ProcessingOverlay.jsx'
 import ResultsPanel from '../results/ResultsPanel.jsx'
 import Button from '../ui/Button.jsx'
+import FadeContent from '../ui/FadeContent.jsx'
 import { predictAudio } from '../../services/api.js'
 import { usePredictionHistory } from '../../hooks/usePredictionHistory.js'
 import PredictionHistory from '../history/PredictionHistory.jsx'
@@ -74,13 +75,15 @@ export default function Analyzer({ machine }) {
 
   return (
     <section id="analyzer" className="mx-auto max-w-6xl py-12 scroll-mt-24">
-      <div className="mb-6 px-2">
-        <h2 className="text-2xl font-bold tracking-tight text-brand-text">Analyze Audio</h2>
-        <p className="mt-1 text-sm text-brand-muted">
-          Upload a sample, then run the model. Machine:{' '}
-          <span className="font-medium text-brand-forest">{machine}</span>.
-        </p>
-      </div>
+      <FadeContent className="mb-6 px-2">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-brand-text">Analyze Audio</h2>
+          <p className="mt-1 text-sm text-brand-muted">
+            Upload a sample, then run the model. Machine:{' '}
+            <span className="font-medium text-brand-forest">{machine}</span>.
+          </p>
+        </div>
+      </FadeContent>
 
       <div className="px-2">
         <AudioDropzone
@@ -94,14 +97,22 @@ export default function Analyzer({ machine }) {
       {sourceFile && !analyzing && (
         <div className="mt-6 flex flex-col items-center gap-3 px-2">
           <div className="flex items-center gap-3">
-            <Button
-              variant="accent"
-              onClick={runAnalysis}
-              disabled={!fileInfo.valid}
-              className="px-8 text-base text-brand-forest disabled:pointer-events-none disabled:opacity-50"
+            <span
+              className={
+                fileInfo.valid && !analyzing
+                  ? 'glow-button inline-flex rounded-full'
+                  : 'inline-flex rounded-full'
+              }
             >
-              Analyze Audio
-            </Button>
+              <Button
+                variant="accent"
+                onClick={runAnalysis}
+                disabled={!fileInfo.valid}
+                className="px-8 text-base text-brand-forest disabled:pointer-events-none disabled:opacity-50"
+              >
+                Analyze Audio
+              </Button>
+            </span>
             <Button variant="outline" onClick={clearFile}>
               Reset
             </Button>

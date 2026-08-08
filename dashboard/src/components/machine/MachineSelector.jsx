@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { FiCpu, FiLock } from 'react-icons/fi'
 import SpotlightCard from '../ui/SpotlightCard.jsx'
+import FadeContent from '../ui/FadeContent.jsx'
 
 const MACHINES = [
   { id: 'pump', label: 'Pump', available: true, desc: 'Supported' },
@@ -15,7 +16,7 @@ export default function MachineSelector({ selected, onSelect }) {
 
   return (
     <section id="machine-selection" className="mx-auto max-w-6xl py-12 scroll-mt-24">
-      <div className="mb-6 flex items-end justify-between px-2">
+      <FadeContent className="mb-6 flex items-end justify-between px-2">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-brand-text">Select Machine</h2>
           <p className="mt-1 text-sm text-brand-muted">
@@ -25,7 +26,7 @@ export default function MachineSelector({ selected, onSelect }) {
         <span className="hidden items-center gap-2 rounded-full border border-brand-border bg-brand-card px-4 py-1.5 text-sm text-brand-muted sm:inline-flex">
           <FiCpu className="text-brand-forest" /> {active?.label}
         </span>
-      </div>
+      </FadeContent>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         {MACHINES.map((machine, i) => {

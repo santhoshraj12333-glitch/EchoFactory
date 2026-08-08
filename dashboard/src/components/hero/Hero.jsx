@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { FiUpload, FiArrowRight } from 'react-icons/fi'
 import Button from '../ui/Button.jsx'
+import ShinyText from '../ui/ShinyText.jsx'
 
 export default function Hero({ onUpload }) {
   return (
@@ -26,9 +27,9 @@ export default function Hero({ onUpload }) {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-4xl font-bold leading-tight tracking-tight text-white sm:text-6xl"
+            className="text-4xl font-bold leading-tight tracking-tight sm:text-6xl"
           >
-            EchoFactory
+            <ShinyText text="EchoFactory" />
           </motion.h1>
 
           <motion.p

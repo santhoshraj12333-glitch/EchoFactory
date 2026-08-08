@@ -52,6 +52,63 @@ body {
   color: var(--color-brand-forest);
 }
 
+/* ShinyText — soft emerald sheen sweeping across a heading */
+.shiny-text {
+  position: relative;
+  display: inline-block;
+  background: linear-gradient(
+    120deg,
+    #eefbf4 40%,
+    #7ef2d8 50%,
+    #eefbf4 60%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shiny-sweep var(--shiny-speed, 6s) linear infinite;
+}
+
+@keyframes shiny-sweep {
+  0% {
+    background-position: 120% 0;
+  }
+  100% {
+    background-position: -80% 0;
+  }
+}
+
+/* Border glow for the primary action (analyze) button */
+.glow-button {
+  position: relative;
+  isolation: isolate;
+}
+.glow-button::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  z-index: -1;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 229, 163, 0.55),
+    rgba(6, 182, 212, 0.55),
+    rgba(0, 229, 163, 0.55)
+  );
+  background-size: 200% 100%;
+  filter: blur(8px);
+  animation: glow-shift 3s linear infinite;
+}
+
+@keyframes glow-shift {
+  0% {
+    background-position: 0% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
