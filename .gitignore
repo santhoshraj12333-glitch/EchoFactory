@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Data (raw datasets are large and not committed)
+data/
+
+# Models (cnn_best.keras is ~127MB, exceeds GitHub's 100MB limit)
+models/
+backend/models/
+
+# Notebooks checkpoints
+.ipynb_checkpoints/
+
+# Frontend (dashboard)
+dashboard/node_modules/
+dashboard/dist/
+dashboard/.env*.local
+
+# Logs
+*.log
+server.log
+server_error.log
+
+# OS
+.DS_Store
+Thumbs.db
