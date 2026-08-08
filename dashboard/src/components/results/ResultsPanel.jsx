@@ -5,7 +5,7 @@ import Waveform from './Waveform.jsx'
 import MelSpectrogram from './MelSpectrogram.jsx'
 
 export default function ResultsPanel({ result, file }) {
-  const { prediction, machine, confidence, anomaly_score } = result
+  const { prediction, machine, confidence, anomaly_score, spectrogram_b64 } = result
   const abnormal = prediction.toLowerCase() === 'abnormal'
   const conf = Number(confidence) || 0
   const score = Number(anomaly_score) || 0
@@ -93,7 +93,7 @@ export default function ResultsPanel({ result, file }) {
         {/* Audio visualizations */}
         <div className="grid gap-4 border-t border-brand-border p-6 sm:grid-cols-2">
           <Waveform file={file} />
-          <MelSpectrogram />
+          <MelSpectrogram spectrogramB64={spectrogram_b64} />
         </div>
       </div>
     </div>

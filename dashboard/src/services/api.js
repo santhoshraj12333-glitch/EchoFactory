@@ -25,7 +25,8 @@ export async function fetchHealth() {
 /**
  * POST /predict — multipart upload of an audio file.
  * field name is `file`.
- * Returns { machine, prediction, confidence, anomaly_score } from FastAPI.
+ * Returns { machine, prediction, confidence, anomaly_score, spectrogram_b64 }
+ * from FastAPI. spectrogram_b64 is the real 128x313 mel spectrogram PNG.
  */
 export async function predictAudio(file) {
   const formData = new FormData()

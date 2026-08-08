@@ -1,47 +1,12 @@
-import { useEffect, useRef } from 'react'
+import { FiBarChart2 } from 'react-icons/fi'
 
 /**
- * Placeholder mel spectrogram visualization.
- * The backend currently returns only scalar metrics (not the spectrogram),
- * so this renders a stylized placeholder until that data is exposed.
+ * Renders the real 128x313 mel spectrogram returned by the backend as a
+ * base64 PNG image — the exact representation fed into the CNN, computed
+ * with the same preprocessing parameters used during training.
  */
-export default function MelSpectrogram() {
-  const canvasRef = useRef(null)
-
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const dpr = window.devicePixelRatio || 1
-    const w = canvas.clientWidth
-    const h = canvas.clientHeight
-    canvas.width = w * dpr
-    canvas.height = h * dpr
-    const ctx = canvas.getContext('2d')
-    ctx.scale(dpr, dpr)
-
-    // Deterministic pseudo-random rows so the "spectrogram" is stable per load
-    let seed = 42
-    const rnd = () => {
-      seed = (seed * 9301 + 49297) % 233280
-      return seed / 233280
-    }
-
-    const bands = 24
-    const bandH = h / bands
-    ctx.clearRect(0, 0, w, h)
-    for (let b = 0; b < bands; b++) {
-      const t = b / bands
-      const color = `rgba(6,182,212,${0.12 + t * 0.55})`
-      ctx.fillStyle = color
-      let x = 0
-      while (x < w) {
-        const segW = 4 + rnd() * 22
-        const on = rnd() > 0.35
-        if (on) ctx.fillRect(x, b * bandH, segW, bandH)
-        x += segW
-      }
-    }
-  }, [])
+export default function MelSpectrogram({ spectrogramB64 }) {
+  const hasImage = Boolean(spectrogramB64)
 
   return (
     <div className="rounded-card border border-brand-border bg-brand-card p-5">
@@ -49,8 +14,19 @@ export default function MelSpectrogram() {
         <h3 className="text-sm font-semibold text-brand-text">Mel Spectrogram</h3>
         <span className="text-xs text-brand-muted">128 mel bands · 22050 Hz</span>
       </div>
-      <div className="h-28 w-full overflow-hidden rounded-lg bg-brand-surface">
-        <canvas ref={canvasRef} className="h-full w-full" />
+      <div className="flex h-28 w-full items-center justify-center overflow-hidden rounded-lg border border-brand-border bg-black/20">
+        {hasImage ? (
+          <img
+            src={`data:image/png;base64,${spectrogramB64}`}
+            alt="Real mel spectrogram of the analyzed audio"
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <span className="flex flex-col items-center gap-1.5 text-xs text-brand-muted">
+            <FiBarChart2 className="h-5 w-5 opacity-60" />
+            Spectrogram unavailable
+          </span>
+        )}
       </div>
     </div>
   )

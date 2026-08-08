@@ -6,6 +6,7 @@ import numpy as np
 import librosa
 import tensorflow as tf
 import uvicorn
+import spectrogram_image
 
 app = FastAPI(
     title="EchoFactory API",
@@ -109,7 +110,8 @@ async def predict(file: UploadFile = File(...)):
                 "machine": "Pump",
                 "prediction": "Abnormal" if prediction_class == 1 else "Normal",
                 "confidence": round(confidence, 1),
-                "anomaly_score": round(anomaly_score, 2)
+                "anomaly_score": round(anomaly_score, 2),
+                "spectrogram_b64": spectrogram_image.array_to_png_base64(mel_spectrogram_norm)
             })
             
         finally:
