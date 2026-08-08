@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { FiAlertCircle } from 'react-icons/fi'
 import AudioDropzone from './AudioDropzone.jsx'
+import AudioRecorder from './AudioRecorder.jsx'
 import ProcessingSteps from './ProcessingOverlay.jsx'
 import ResultsPanel from '../results/ResultsPanel.jsx'
 import Button from '../ui/Button.jsx'
@@ -17,8 +18,10 @@ const PROCESS_STEPS = [
 ]
 
 export default function Analyzer({ machine }) {
-  const [sourceFile, setSourceFile] = useState(null)
+  const [sourceFile, setSourceFile] = useState(null) // uploaded File | recorded File
+  const [recording, setRecording] = useState(false)
   const [fileInfo, setFileInfo] = useState({ duration: null, valid: false })
+  const [pendingRecording, setPendingRecording] = useState(null) // set before adoption
   const [analyzing, setAnalyzing] = useState(false)
   const [step, setStep] = useState(0)
   const [result, setResult] = useState(null)
@@ -37,6 +40,37 @@ export default function Analyzer({ machine }) {
     setResult(null)
     setError(null)
   }, [])
+
+  // Adopt a finished recording as the analysis source.
+  const handleRecording = useCallback(
+    ({ blob, duration }) => {
+      if (duration !== null && duration < 2) {
+        setError('Recording too short — minimum 2 seconds.')
+        return
+      }
+      const file = new File([blob], 'recording.wav', { type: 'audio/wav' })
+      setPendingRecording(file)
+      setSourceFile(file)
+      setFileInfo({ duration: duration ?? null, valid: true })
+      setResult(null)
+      setError(null)
+    },
+    [],
+  )
+
+  // Recompute file validity when duration lands for an adopted recording.
+  useEffect(() => {
+    if (!pendingRecording || sourceFile !== pendingRecording) return
+    if (fileInfo.duration !== null && fileInfo.duration < 2) {
+      setFileInfo({ ...fileInfo, valid: false })
+      setError('Recording too short — minimum 2 seconds.')
+    } else if (!fileInfo.valid) {
+      setFileInfo((prev) =>
+        prev.duration === null ? prev : { ...prev, valid: true },
+      )
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingRecording, sourceFile, fileInfo.duration])
 
   // Drives the step indicator while the single HTTP request is in flight.
   useEffect(() => {
@@ -79,17 +113,22 @@ export default function Analyzer({ machine }) {
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-brand-text">Analyze Audio</h2>
           <p className="mt-1 text-sm text-brand-muted">
-            Upload a sample, then run the model. Machine:{' '}
+            Upload or record a sample, then run the model. Machine:{' '}
             <span className="font-medium text-brand-forest">{machine}</span>.
           </p>
         </div>
       </FadeContent>
 
-      <div className="px-2">
+      <div className="grid gap-4 px-2 md:grid-cols-2">
         <AudioDropzone
-          file={sourceFile}
+          file={sourceFile && !recording ? sourceFile : null}
           onSelect={handleSelect}
           onFileInfo={setFileInfo}
+          disabled={analyzing || recording}
+        />
+        <AudioRecorder
+          onStatus={(s) => setRecording(s === 'recording')}
+          onResult={handleRecording}
           disabled={analyzing}
         />
       </div>

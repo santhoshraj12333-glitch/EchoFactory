@@ -19,9 +19,11 @@ export default function AudioRecorder({ onResult, onStatus, disabled }) {
 
   const stop = useCallback(() => {
     clearInterval(timerRef.current)
+    timerRef.current = null
     const stream = streamRef.current
     stream?.getTracks().forEach((t) => t.stop())
     streamRef.current = null
+    setRecording(false)
 
     const ctx = ctxRef.current
     if (!ctx) return
