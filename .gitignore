@@ -11,6 +11,7 @@ data/
 # Models (cnn_best.keras is ~127MB, exceeds GitHub's 100MB limit)
 models/
 backend/models/
+hf-space/models/
 
 # Notebooks checkpoints
 .ipynb_checkpoints/
